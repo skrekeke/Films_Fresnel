@@ -13,7 +13,7 @@ InputData.OutputDir = '.\';
 tic
 %% Definitions
 % Spectra definition
-InputData.Wavelength        = 200:1:900; %nm
+InputData.Wavelength        = 250:1:900; %nm
 % InputData.Wavelength        = 633; %nm
 % InputData.Wavelength       = 515; %nm
 
@@ -29,19 +29,19 @@ InputData.Polarization_inc = [0 1]; % fraction of [TE TM] polarization
 % InputData.Materials         = {1; 'Au_Jon'; 1}; %{environment, metalic film, substrate}
 % InputData.Materials         = {1; 'Au_Jon'; 'glass(BK7)'}; %{environment, metalic film, substrate}
 
-% InputData.Materials         = {1; 'Au_Jon'; 1};
-% InputData.Materials         = {1; 'Ag_Jon'; 1};
-% InputData.Materials         = {1; 'glass(BK7)'; 1};
-InputData.Materials         = {1; 'Au_Jon'; 'Si_JAW'; 1};
+% InputData.Materials         = {1; 'Au_Jon'; 'glass(BK7)'};
+% InputData.Materials         = {1; 'Ag_Jon'; 'glass(BK7)'};
+% InputData.Materials         = {1; 'Au_Jon'; 'Ag_Jon'; 'glass(BK7)'};
+InputData.Materials         = {1; 'Pd_Plk'; 'YH3'; 'Si_JAW'};
 
 % angle of incidence
 % InputData.Theta1 = 10:5:75; % degrees
 % InputData.Theta1 = 0; % degrees
 
-t0 = toc;
+
 
  for n_mat=length(InputData.Materials):-1:1
-    n(:,n_mat) = interpolate_nk(InputData.Wavelength, InputData.Materials{n_mat});
+    n(:,n_mat) = interpolate_nk(InputData.Wavelength, InputData.Materials{n_mat}, 1);
     
  end % (n_0, n_1, n_2)
  Epsilon = n.^2;
@@ -55,27 +55,35 @@ t0 = toc;
 % %{
  N_WAVE=length(InputData.Wavelength);
  for nwave=N_WAVE:-1:1
-    [ R(nwave), T(nwave), r(nwave)] = films_TMM(InputData.Wavelength(nwave), Epsilon(nwave,:), InputData);
+    [ R_p(nwave), T_p(nwave), r_p(nwave)] = films_TMM(InputData.Wavelength(nwave), Epsilon(nwave,:), [0 1]);% last array - polarization fraction: [te tm] 
+    [ R_s(nwave), T_s(nwave), r_s(nwave)] = films_TMM(InputData.Wavelength(nwave), Epsilon(nwave,:), [1 0]);
  end
  
  figure
- plot(InputData.Wavelength, R, 'Color', 'black'), hold on
- plot(InputData.Wavelength, T,  '--', 'Color', 'black'), hold on
- plot(InputData.Wavelength, R+T, 'Color', 'red')
+ plot(InputData.Wavelength, R_p, 'Color', 'black'), hold on
+ plot(InputData.Wavelength, T_p,  '--', 'Color', 'black'), hold on
+ plot(InputData.Wavelength, 1 - R_p - T_p, 'Color', 'red')
  xlabel('Wavelength, nm'), ylabel('R, T')
- legend('R','T','R+T')
+ legend('R','T','1-R-T')
 axis tight
+
+figure
+plot(InputData.Wavelength, real(r_p./r_s), '-k', InputData.Wavelength, imag(r_p./r_s), '--k', 'LineWidth', 1.5)
+ legend('Re(\rho)','Im(\rho)')
+ title(' 4nm Pd / 70 nm Y / Si')
+  xlabel('Wavelength, nm'), ylabel('r_p / r_s')
 % figure
 % plot(InputData.Wavelength, real(r), 'Color', 'black'),hold on
 % plot(InputData.Wavelength, imag(r), '--', 'Color', 'black'),
 %  xlabel('Wavelength, nm'), ylabel('Re_r, Im_r')
 %  legend('Re','Im')
- tend = toc;
-fprintf('\n total time - %d\n', tend - t0)
+toc;
+
 return
 %}
 
 %% Reflection and transmittion dependance on polar angle
+%{
 THETA = 0:1:89; %degrees
 N_THETA=length(THETA);
 for ntheta=N_THETA:-1:1
@@ -88,7 +96,7 @@ plot(THETA, T, '--', 'Color', 'black')
 plot(THETA, 1-R-T, 'Color', 'red')
  xlabel('Theta, degrees'), ylabel('R, T')
  legend('R','T','Absorbance')
-
+%}
 
 
 

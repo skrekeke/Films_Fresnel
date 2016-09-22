@@ -1,4 +1,4 @@
-function [ R, T, r ] = films_TMM( lam0, epsilon, theta, mu  )
+function [ R, T, r ] = films_TMM( lam0, epsilon, polarization_array, theta, mu  )
 % This MATLAB program implements the transfer matrix method
 % INITIALIZE MATLAB
 
@@ -6,7 +6,7 @@ function [ R, T, r ] = films_TMM( lam0, epsilon, theta, mu  )
 % clc
 % clear all;
 
-tic
+
 
 InputData.MATLABDir = 'D:\works\';
 
@@ -27,13 +27,21 @@ if ~exist('lam0', 'var')
 end	
 if ~exist('theta', 'var')
     fprintf('\n Variable THETA does not exist\n')
-    theta = 70 * degrees; %elevation angle
+    theta = 75 * degrees; %elevation angle
 else
     theta = theta * degrees;
 end
+
 phi = 0 * degrees; %azimuthal angle
-pte = 0; %amplitude of TE polarization
-ptm = 1; %amplitude of TM polarization
+
+if ~exist('polarization_array', 'var')
+    pte = 0; %amplitude of TE polarization
+    ptm = 1; %amplitude of TM polarization
+else
+    pte = polarization_array(1); %amplitude of TE polarization
+    ptm = polarization_array(2); %amplitude of TM polarization
+end
+    
 % EXTERNAL MATERIALS
 if ~exist('epsilon','var')
     fprintf('\n Variable epsilon does not exist\n')
@@ -60,7 +68,7 @@ end
 % % LAYERS
 % UR = [ 1 ]; %array of permeabilities in each layer
 % ER = [ 0.916*(0.916 - 1i*1.84) ]; %array of permittivities in each layer
-L = [ 55, 600000 ]; % nm; array of the thicknesses of each layer
+L = [ 4 70 ]; % nm; array of the thicknesses of each layer
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -87,7 +95,7 @@ S11g = zeros([2 2]);
 S12g = eye([2 2]);
 S21g = eye([2 2]);
 S22g = zeros([2 2]);
-t1 = toc;
+
 NLAY = length(L);
 for nlay = 1:NLAY
     kzi = sqrt(UR(nlay)*ER(nlay) - kx^2 - ky^2);
@@ -123,7 +131,7 @@ for nlay = 1:NLAY
 
 end
 
-t2 = toc;
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%  S-matrix of reflection region   
